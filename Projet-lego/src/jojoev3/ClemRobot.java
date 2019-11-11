@@ -90,11 +90,11 @@ public class ClemRobot {
 		col=codeRVB.keySet();  // get set-view of keys
 		Iterator itr = col.iterator();
 
-		/*while(itr.hasNext()) {
+		while(itr.hasNext()) {
 			code = (String) itr.next();
 			System.out.println("The capital of " + str + " is " + 
 					capitals.getProperty(str) + ".");
-		}     */ 
+		}      
 	}
 	public void CalibrageCol() {
 		boolean again=true;
@@ -299,15 +299,19 @@ public class ClemRobot {
 	}
 	
 	public boolean paletDansPince() {
-		if(tabPress[0]==1)
+		if(tabPress[0]==1) //1 ==> pression activée
 			return true;
 		return false;
 	}
 
 	public void ramasserPalet() {
 		mP.forward(); //ouverture des pinces
-		while(paletDansPince() || mP.getPosition()<500) {
-			System.out.println("open"); 
+		while(!paletDansPince() || mP.getPosition()<550) {
+			System.out.println("ENZO LA PUTE"); 
+			
+		}
+		mP.stop();
+		while(!paletDansPince()) {
 			
 		}
 		mP.backward();
