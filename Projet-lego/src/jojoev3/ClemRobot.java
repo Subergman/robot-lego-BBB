@@ -11,7 +11,7 @@ import lejos.robotics.SampleProvider;
 import lejos.robotics.filter.MeanFilter;
 import lejos.robotics.chassis.*;
 import java.io.*;  
-
+import java.util.*;
 
 public class ClemRobot {
 	EV3MediumRegulatedMotor mG;
@@ -61,8 +61,7 @@ public class ClemRobot {
 		pression=new EV3TouchSensor(LocalEV3.get().getPort("S2"));
 		samplePress= pression.getTouchMode();
 		tabPress=new float[samplePress.sampleSize()];
-
-
+		
 		ultrason=new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
 		sampleUS=ultrason.getDistanceMode();
 		usSample= new float[sampleUS.sampleSize()];
@@ -79,6 +78,24 @@ public class ClemRobot {
 		return sampleCol.sampleSize();
 	}
 
+	public void Calibrage() {
+		Properties codeRVB = new Properties();
+		Set col;
+		String code;
+		System.out.println("Press enter to calibrate green...");
+		Button.ENTER.waitForPressAndRelease();
+		float[] green = new float[sampleCol.sampleSize()];
+		sampleCol.fetchSample(green, 0);
+		codeRVB.put(green, green[0]+","+green[1]+","+green[2]);
+		col=codeRVB.keySet();  // get set-view of keys
+		Iterator itr = col.iterator();
+
+		/*while(itr.hasNext()) {
+			code = (String) itr.next();
+			System.out.println("The capital of " + str + " is " + 
+					capitals.getProperty(str) + ".");
+		}     */ 
+	}
 	public void CalibrageCol() {
 		boolean again=true;
 
@@ -226,9 +243,6 @@ public class ClemRobot {
 			distanceValue = usSample[0];
 			if(distanceValue>0.10) {
 				System.out.println("le if est dans cette pute");
-				mG.synchronizeWith(new EV3MediumRegulatedMotor[] {mD});
-				mG.forward();
-				mD.forward();
 			} else {
 				mG.stop();
 				mD.stop();
@@ -258,22 +272,51 @@ public class ClemRobot {
 
 	}
 	public void ouvrirPinces() {
-		
+		System.out.println("tacho avant de lancer l'ouverture"+mP.getTachoCount());
+		System.out.println("get pos avant de lancer l'ouverture"+mP.getPosition());
 		Button.waitForAnyPress();
-		mP.rotate(700);
-		
+		//mP.rotate(700);
+		mP.forward();
+		Button.waitForAnyPress();
+		mP.stop();
+		System.out.println("tacho après fermeture"+mP.getTachoCount()); //486
+		System.out.println("pos après fermeture"+mP.getPosition()); //485
+		Button.waitForAnyPress();
+
 	}
 
 	public void fermerPinces() {
-		mP.rotate(-700);
+		System.out.println("tacho avant de lancer l'ouverture"+mP.getTachoCount());
+		System.out.println("get pos avant de lancer l'ouverture"+mP.getPosition());
+		Button.waitForAnyPress();
+		//mP.rotate(700);
+		mP.backward();
+		Button.waitForAnyPress();
+		mP.stop();
+		System.out.println("tacho après fermeture"+mP.getTachoCount()); //-467
+		System.out.println("pos après fermeture"+mP.getPosition()); //-467
+		Button.waitForAnyPress();
+	}
+	
+	public boolean paletDansPince() {
+		if(tabPress[0]==1)
+			return true;
+		return false;
 	}
 
 	public void ramasserPalet() {
+		mP.forward(); //ouverture des pinces
+		while(paletDansPince() || mP.getPosition()<500) {
+			System.out.println("open"); 
+			
+		}
+		mP.backward();
+		while(mP.getPosition()>20) {
+			System.out.println("close"); 
+			
+		}
+		mP.close();
 		Button.waitForAnyPress();
-		mP.rotate(700);
-		Delay.msDelay(500);
-		mP.rotate(-700);
-		
 	}
 
 	public void virage(double rotation){
@@ -309,7 +352,7 @@ public class ClemRobot {
 		int tabAngle[]=new int[2*tailleEch+1];//on tournera a gauche et a droite, donc *2 et +1 pour la valeur 0
 		double tabDis[]=new double[2*tailleEch+1];
 		int angleCrt=0;
-		
+
 		sampleUS.fetchSample(usSample, 0); // attribution valeur capteur US à case 0 du tableau usSample
 		distanceValue = usSample[0];
 
@@ -361,17 +404,17 @@ public class ClemRobot {
 
 
 
-public static void main(String[] args) {
-	ClemRobot TAMERE= new ClemRobot();
-	//TAMERE.ouvrirPinces();
-	//System.out.println(TAMERE.getSample());
-	TAMERE.ouvrirPinces();
-	//TAMERE.fermerPinces();
-	//TAMERE.avancer();
-	//TAMERE.virage(720);
-	//TAMERE.ramasserPalet();
-	//TAMERE.chercherObstaclePlusProche(50);
-	//TAMERE.CalibrageCol();
-}
+	public static void main(String[] args) {
+		ClemRobot TAMERE= new ClemRobot();
+		//TAMERE.ouvrirPinces();
+		//System.out.println(TAMERE.getSample());
+		//TAMERE.ouvrirPinces();
+		//TAMERE.fermerPinces();
+		//TAMERE.avancer();
+		//TAMERE.virage(720);
+		TAMERE.ramasserPalet();
+		//TAMERE.chercherObstaclePlusProche(50);
+		//TAMERE.CalibrageCol();
+	}
 
 }
