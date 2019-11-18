@@ -61,7 +61,7 @@ public class ClemRobot {
 		pression=new EV3TouchSensor(LocalEV3.get().getPort("S2"));
 		samplePress= pression.getTouchMode();
 		tabPress=new float[samplePress.sampleSize()];
-		
+
 		ultrason=new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
 		sampleUS=ultrason.getDistanceMode();
 		usSample= new float[sampleUS.sampleSize()];
@@ -299,15 +299,22 @@ public class ClemRobot {
 	}
 	
 	public boolean paletDansPince() {
+		samplePress.fetchSample(tabPress, 0);
 		if(tabPress[0]==1) //1 ==> pression activée
 			return true;
 		return false;
 	}
+	
 
 	public void ramasserPalet() {
 		mP.forward(); //ouverture des pinces
-		while(!paletDansPince() || mP.getPosition()<550) {
-			System.out.println("ENZO LA PUTE"); 
+		float a=0;
+		while(!paletDansPince()  ) {
+			System.out.println(mP.getPosition());
+			if(mP.getPosition()>500)
+				break;
+			
+			System.out.println(a); 
 			
 		}
 		mP.stop();
@@ -315,9 +322,9 @@ public class ClemRobot {
 			
 		}
 		mP.backward();
+		System.out.println("close");
 		while(mP.getPosition()>20) {
-			System.out.println("close"); 
-			
+			 
 		}
 		mP.close();
 		Button.waitForAnyPress();
@@ -411,7 +418,8 @@ public class ClemRobot {
 	public static void main(String[] args) {
 		ClemRobot TAMERE= new ClemRobot();
 		//TAMERE.ouvrirPinces();
-		//System.out.println(TAMERE.getSample());
+		System.out.println(TAMERE.mP.getPosition());
+		Button.waitForAnyPress();
 		//TAMERE.ouvrirPinces();
 		//TAMERE.fermerPinces();
 		//TAMERE.avancer();
